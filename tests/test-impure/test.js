@@ -3,4 +3,4 @@
 const assert = require('assert');
 const apn = require('apn');
 
-assert.ok(apn)
+assert.ok(apn);

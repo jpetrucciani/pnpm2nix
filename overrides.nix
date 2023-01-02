@@ -2,7 +2,7 @@
 with pkgs;
 
 {
-  sharp = (drv: drv.overrideAttrs(oldAttrs: {
+  sharp = (drv: drv.overrideAttrs (oldAttrs: {
     buildInputs = oldAttrs.buildInputs ++ (with pkgs; [
       vips
       glib
@@ -20,12 +20,12 @@ with pkgs;
     '';
   }));
 
-  hiredis = (drv: drv.overrideAttrs(oldAttrs: {
+  hiredis = (drv: drv.overrideAttrs (oldAttrs: {
     buildInputs = oldAttrs.buildInputs
       ++ lib.optional stdenv.isDarwin darwin.cctools;
   }));
 
-  pkcs11js = (drv: drv.overrideAttrs(oldAttrs: {
+  pkcs11js = (drv: drv.overrideAttrs (oldAttrs: {
     buildInputs = oldAttrs.buildInputs
       ++ lib.optional stdenv.isDarwin darwin.libobjc;
   }));

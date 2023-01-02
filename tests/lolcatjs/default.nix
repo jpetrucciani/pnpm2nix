@@ -1,4 +1,4 @@
-{ pkgs ? (import <nixpkgs> {})}:
+{ pkgs ? (import <nixpkgs> { }) }:
 with pkgs;
 with (import ../../. { inherit pkgs; });
 let
@@ -7,12 +7,13 @@ let
     src = fetchFromGitHub {
       owner = "robertboloc";
       repo = "lolcatjs";
-      rev = "a0baef18de64de2a794e1726fed89ad6b581aeec";
-      sha256 = "1s922sy2irzjwj8xswanqd6q6dnwaxy252npq4h13yvx7dirgm31";
+      rev = "7a511b29ac73c67e796ee5d5acd26b0417435079";
+      sha256 = "sha256-YLtN11byiT3jtpV2hb1iRkDlm91aReCdqZxXSfh5pak=";
     };
 
     packageJSON = ./package.json;
     pnpmLock = ./pnpm-lock.yaml;
   };
 
-in package
+in
+package

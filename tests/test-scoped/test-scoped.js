@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require("@most/hold");
+require('@most/hold');

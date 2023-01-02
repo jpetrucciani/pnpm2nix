@@ -1,0 +1,13 @@
+name: formatting
+on: {workflow_dispatch, push: {branches: [main]}, pull_request}
+jobs:
+  nixpkgs-fmt:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3.2.0
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - run: nix-env -f . -iA nixpkgs-fmt
+      - run: nixpkgs-fmt --check .

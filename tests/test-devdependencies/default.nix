@@ -1,4 +1,4 @@
-{ pkgs ? (import <nixpkgs> {})}:
+{ pkgs ? (import <nixpkgs> { }) }:
 with pkgs;
 with (import ../../. { inherit pkgs; });
 let
@@ -20,4 +20,5 @@ let
     pnpmLock = ./pnpm-lock.yaml;
   };
 
-in package
+in
+package

@@ -1,9 +1,11 @@
-with (import ((import <nixpkgs> {}).fetchFromGitHub {
-  repo = "nixpkgs-channels";
-  owner = "NixOS";
-  sha256 = "1bjq5gl08pni6q2nqv9w98ym3kybzf7qc6cx4js0388vg8zfgf2k";
-  rev = "49a16a290e68ebb1ef5acadf25cf149d0d530d05";
-}) { });
+with (import
+  ((import <nixpkgs> { }).fetchFromGitHub {
+    repo = "nixpkgs";
+    owner = "NixOS";
+    rev = "293a28df6d7ff3dec1e61e37cc4ee6e6c0fb0847";
+    sha256 = "1m6smzjz3agkyc6dm83ffd8zr744m6jpjmffppvcdngk82mf3s3r";
+  })
+  { });
 with lib.attrsets;
 with lib;
 
@@ -12,6 +14,7 @@ let
 
   pnpm2nix = ../.;
 
+  _node = "${pkgs.nodejs-16_x}/bin/node";
   lolcatjs = importTest ./lolcatjs;
   test-sharp = importTest ./test-sharp;
   test-impure = importTest ./test-impure;
@@ -28,7 +31,6 @@ let
 
   mkTest = (name: test: pkgs.runCommandNoCC "${name}" { } (''
     mkdir $out
-
   '' + test));
 
 in
@@ -52,13 +54,17 @@ lib.listToAttrs (map (drv: nameValuePair drv.name drv) [
   '')
 
   # Test a natively linked overriden dependency
-  (mkTest "native-overrides" "${test-sharp}/bin/testsharp")
+  (mkTest "native-overrides" "${_node} ${test-sharp}/bin/testsharp")
 
   # Test to imupurely build a derivation
-  (mkTest "impure" "${test-impure}/bin/testapn")
+  (mkTest "impure" "${_node} ${test-impure}/bin/testapn")
 
   (mkTest "python-lint" ''
-    echo ${(python2.withPackages (ps: [ ps.flake8 ]))}/bin/flake8 ${pnpm2nix}/
+    echo ${(python310.withPackages (ps: [ ps.flake8 ]))}/bin/flake8 ${pnpm2nix}/
+  '')
+
+  (mkTest "python-formatting" ''
+    echo ${(python310.withPackages (ps: [ ps.black ]))}/bin/black --check ${pnpm2nix}/
   '')
 
   # Check if nested directory structures work properly
@@ -75,12 +81,15 @@ lib.listToAttrs (map (drv: nameValuePair drv.name drv) [
   '')
 
   # Test a "weird" package with -beta in version number spec
-  (let
-    web3Drv = lib.elemAt (lib.filter (x: x.name == "web3-1.0.0-beta.55") web3.buildInputs) 0;
-  in mkTest "test-beta-names" ''
-    test "${web3Drv.name}" = "web3-1.0.0-beta.55" || (echo "web3 name mismatch"; exit 1)
-    test "${web3Drv.version}" = "1.0.0-beta.55" || (echo "web3 version mismatch"; exit 1)
-  '')
+  (
+    let
+      web3Drv = lib.elemAt (lib.filter (x: x.name == "web3-1.0.0-beta.55") web3.buildInputs) 0;
+    in
+    mkTest "test-beta-names" ''
+      test "${web3Drv.name}" = "web3-1.0.0-beta.55" || (echo "web3 name mismatch"; exit 1)
+      test "${web3Drv.version}" = "1.0.0-beta.55" || (echo "web3 version mismatch"; exit 1)
+    ''
+  )
 
   # Check if checkPhase is being run correctly
   (mkTest "devdependencies" ''
@@ -108,22 +117,21 @@ lib.listToAttrs (map (drv: nameValuePair drv.name drv) [
 
   # Test module local (file dependencies)
   (mkTest "test-filedeps" ''
-    ${test-filedeps}/bin/test-module
+    ${_node} ${test-filedeps}/bin/test-module
   '')
 
   # Test circular dependencies are broken up and still works
   (mkTest "test-circular" ''
-    HOME=$(mktemp -d) ${test-circular}/bin/test-circular
+    HOME=$(mktemp -d) ${_node} ${test-circular}/bin/test-circular
   '')
 
   # Test scoped package
   (mkTest "test-scoped" ''
-    ${test-scoped}/bin/test-scoped
+    ${_node} ${test-scoped}/bin/test-scoped
   '')
 
   # # Test pnpm workspace recursive linked packages
   # (mkTest "test-recursive-link" ''
   #   ${test-recursive-link}/bin/test-recursive-link
   # '')
-
 ])
