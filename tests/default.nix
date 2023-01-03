@@ -18,6 +18,7 @@ let
   lolcatjs = importTest ./lolcatjs;
   test-sharp = importTest ./test-sharp;
   test-impure = importTest ./test-impure;
+  test-or = importTest ./test-or;
   nested-dirs = importTest ./nested-dirs;
   test-peerdependencies = importTest ./test-peerdependencies;
   test-devdependencies = importTest ./test-devdependencies;
@@ -29,7 +30,7 @@ let
   test-scoped = importTest ./test-scoped;
   test-recursive-link = importTest ./recursive-link/packages/a;
 
-  mkTest = (name: test: pkgs.runCommandNoCC "${name}" { } (''
+  mkTest = (name: test: pkgs.runCommand "${name}" { } (''
     mkdir $out
   '' + test));
 
@@ -59,12 +60,15 @@ lib.listToAttrs (map (drv: nameValuePair drv.name drv) [
   # Test to imupurely build a derivation
   (mkTest "impure" "${_node} ${test-impure}/bin/testapn")
 
+  # test with deps that have weirdly formatted ||s with extra spacing
+  (mkTest "test-or" "${_node} ${test-or}/bin/test-or")
+
   (mkTest "python-lint" ''
-    echo ${(python310.withPackages (ps: [ ps.flake8 ]))}/bin/flake8 ${pnpm2nix}/
+    echo ${(python3.withPackages (ps: [ ps.flake8 ]))}/bin/flake8 ${pnpm2nix}/
   '')
 
   (mkTest "python-formatting" ''
-    echo ${(python310.withPackages (ps: [ ps.black ]))}/bin/black --check ${pnpm2nix}/
+    echo ${(python3.withPackages (ps: [ ps.black ]))}/bin/black --check ${pnpm2nix}/
   '')
 
   # Check if nested directory structures work properly

@@ -4,14 +4,11 @@
 , node-gyp ? nodePackages.node-gyp
 }:
 
-
 let
   inherit (pkgs) stdenv lib fetchurl;
 
   hasScript = scriptName: "test \"$(${pkgs.jq}/bin/jq -e -r '.scripts | .${scriptName} | length' < package.json)\" -gt 0";
-
   linkBinOutputsScript = ./link-bin-outputs.py;
-
 in
 {
 
@@ -25,11 +22,11 @@ in
         # Trying to reduce some closure size
         dontPatchShebangs = true;
 
-        nativeBuildInputs = with pkgs; [ pkgconfig ];
+        nativeBuildInputs = with pkgs; [ pkg-config ];
 
         propagatedBuildInputs = [ ];
 
-        buildInputs = [ nodejs nodejs.passthru.python node-gyp ]
+        buildInputs = [ nodejs pkgs.python3 node-gyp ]
           ++ lib.optionals (lib.hasAttr "buildInputs" attrs) attrs.buildInputs
           ++ lib.optionals linkDevDependencies devDependencies
           ++ deps;
@@ -140,7 +137,7 @@ in
 
         installPhase =
           let
-            linkBinOutputs = "${nodejs.passthru.python}/bin/python ${linkBinOutputsScript}";
+            linkBinOutputs = "${pkgs.python3}/bin/python ${linkBinOutputsScript}";
           in
             attrs.installPhase or ''
               runHook preInstall
